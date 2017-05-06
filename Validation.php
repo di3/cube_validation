@@ -26,7 +26,7 @@ class Validation {
 	/**
 	 * execute the validation
 	 **/
-	public function parse($name, $ruleName, $ruleValue = null) {
+	public function parse($name, $ruleName, $ruleValue = null): bool {
 		$call = 'validate'.ucfirst($ruleName);
 		if (method_exists($this, $call)) {
 			$dataValue = (isset($this->data[$name])) ? $this->data[$name] : null;
@@ -47,7 +47,7 @@ class Validation {
 		return true;
 	}
 
-	public function parseCombined($names, $ruleName, $ruleValue = null) {
+	public function parseCombined($names, $ruleName, $ruleValue = null): bool {
 		$call = 'validate'.ucfirst($ruleName);
 		if (method_exists($this, $call)) {
 			$dataValues = [];
@@ -77,10 +77,10 @@ class Validation {
 		return true;
 	}
 
-	public function parseAll() {
+	public function parseAll(): int {
 		$errors = 0;
-                foreach ($this->validation as $name => $value) {
-                        if (is_numeric($name)) {
+    foreach ($this->validation as $name => $value) {
+      if (is_numeric($name)) {
 				if (is_array($value)) {
 					//combined validation
 					if (count($value) > 1) {
@@ -97,10 +97,10 @@ class Validation {
 					}
 				}
 				//name is numeric only have a value -> require rule
-                                elseif (!$this->parse($value, 'required')) {
+				elseif (!$this->parse($value, 'required')) {
 					$errors++;
 				}
-                        } else {
+      } else {
 				if (!is_array($value)) {
 					//value is no array -> just one rule
 					if (!$this->parse($name, $value)) {
@@ -120,15 +120,12 @@ class Validation {
 						}
 					}
 				}
-                        }
-                }
+			}
+		}
 		return $errors;
 	}
 
-	/**
-	 * @return bool
-	 **/
-	public function isValid() {
+	public function isValid(): bool {
 		if ($this->isValid === null) {
 			 $this->parseAll();
 		}
