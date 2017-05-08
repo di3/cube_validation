@@ -7,20 +7,20 @@ class Validation {
   protected $validation = [];
 
   private $isValid = null;
-  private $ErrorClass;
+  private $ErrorHandler;
 
-  public function __construct(array $data, array $validation, $ErrorClass = null) {
+  public function __construct(array $data, array $validation, $ErrorHandler = null) {
     $this->data = $data;
     $this->validation = $validation;
-    if ($ErrorClass === null) {
-      $this->ErrorClass = new ValidationError();
+    if ($ErrorHandler === null) {
+      $this->ErrorHandler = new ValidationError();
     } else {
-      $this->ErrorClass = $ErrorClass;
+      $this->ErrorHandler = $ErrorHandler;
     }
   }
 
   private function addError($name, $ruleName, $ruleValue) {
-    $this->ErrorClass->addError($name, $ruleName, $ruleValue);
+    $this->ErrorHandler->addError($name, $ruleName, $ruleValue);
   }
 
   /**
@@ -44,10 +44,12 @@ class Validation {
         }
       }
     }
+    if ($this->isValid === null) $this->isValid = true;
     return true;
   }
 
   public function parseCombined($names, $ruleName, $ruleValue = null): bool {
+    $ok = true;
     $call = 'validate'.ucfirst($ruleName);
     if (method_exists($this, $call)) {
       $dataValues = [];
@@ -58,27 +60,28 @@ class Validation {
         foreach ($names as $name) {
           $this->addError($name, $ruleName, $ruleValue);
         }
-        $this->isValid = false;
-        return false;
+        $ok = false;
       }
     } else {
       if ($ruleName == 'required') {
-        $ok = true;
         foreach ($names as $name) {
           if (empty($this->data[$name])) {
             $this->addError($name, $ruleName, $ruleValue);
-            $this->isValid = false;
             $ok = false;
           }
         }
-        return $ok;
       }
     }
-    return true;
+    if ($this->isValid !== false || $this->isValid === null) $this->isValid = $ok;
+    return $ok;
   }
 
   public function parseAll(): int {
     $errors = 0;
+    if (count($this->validation) == 0) {
+      $this->isValid = true;
+      return 0;
+    }
     foreach ($this->validation as $name => $value) {
       if (is_numeric($name)) {
         if (is_array($value)) {
@@ -145,6 +148,10 @@ class Validation {
     }
   }
   public function getError($name = null) {
-    return $this->ErrorClass->getError($name);
+    return $this->ErrorHandler->getError($name);
+  }
+
+  public function getErrorHandler() {
+    return $this->ErrorHandler;
   }
 }

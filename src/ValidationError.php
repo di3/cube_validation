@@ -37,9 +37,6 @@ class ValidationError extends Exception implements Iterator, Countable {
     if (!isset($this->messages[$name])) $this->messages[$name] = [];
     $this->messages[$name][$ruleName] = $message;
   }
-  public function addDefaultMessage($ruleName, $message) {
-    $this->defaultMessages[$ruleName] = $message;
-  }
   public function addError($name, $ruleName, $ruleValue) {
     if (!isset($this->errors[$name])) $this->errors[$name] = [];
     if (is_numeric($ruleName)) {
@@ -47,10 +44,10 @@ class ValidationError extends Exception implements Iterator, Countable {
     }
     if (isset($this->messages[$name]) && isset($this->messages[$name][$ruleName])) {
       $message = $this->messages[$name][$ruleName];
-    } elseif (isset($this->defaultMessages[$ruleName])) {
-      $message = $this->defaultMessages[$ruleName];
-    } elseif (isset($this->defaultMessages['*'])) {
-      $message = $this->defaultMessages['*'];
+    } elseif (isset($this->messages["*"])) {
+      if (isset($this->messages["*"][$ruleName])) $message = $this->messages["*"][$ruleName];
+      elseif (isset($this->messages["*"]["*"])) $message = $this->messages["*"]["*"];
+      else $message = false;
     } else {
       $message = false;
     }
